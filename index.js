@@ -13,6 +13,15 @@ const typeDefs = gql`
     body: String!
   }
 
+  type Meta {
+    total: Int!
+  }
+
+  type PostResultWithMeta {
+    metadata: Meta!
+    data: [Post]!
+  }
+
   type Comment {
     postId: String!
     id: Int!
@@ -46,14 +55,13 @@ const typeDefs = gql`
   }
 
   input PostInput {
-    userId: Int!
-    id: Int!
     title: String!
     body: String!
   }
 
   type Query {
     posts(page: Int, limit: Int, sort: String, order: String): [Post]
+    postsWithMeta(page: Int, limit: Int!, sort: String, order: String): PostResultWithMeta!
   }
 
   type Mutation {
@@ -78,6 +86,26 @@ const resolvers = {
         }
       })
       return res.data
+    },
+    async postsWithMeta(root, args) {
+      console.log('??')
+      const {
+        page, limit, sort, order
+      } = args
+      const res = await http.get('/posts', {
+        params: {
+          _page: page,
+          _limit: limit,
+          _sort: sort,
+          _order: order
+        }
+      })
+      return {
+        metadata: {
+          total: res.headers['x-total-count']
+        },
+        data: res.data
+      }
     }
   },
   Mutation: {
@@ -90,7 +118,14 @@ const resolvers = {
         data: post
       })
 
-      return res.data.data
+      const now = Date.now()
+      const id = Number(now.toString().slice(8, 13))
+
+      return {
+        ...res.data.data,
+        id,
+        userId: 12
+      }
     },
     async updatePost(root, args) {
       const {

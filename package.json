@@ -14,5 +14,8 @@
     "apollo-server": "^2.0.6",
     "axios": "^0.18.0",
     "graphql": "^14.0.0"
+  },
+  "engines": {
+    "node": "10.x.x"
   }
 }
